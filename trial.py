@@ -3,6 +3,7 @@ import json
 import requests
 import feedparser
 import jsonpickle
+import datetime
 from slackclient import SlackClient
 
 
@@ -10,58 +11,68 @@ def get_real_content(current_summary):
     return current_summary.split("<br />", 1)[1]
 
 
-# def get_channel_id(channel_name):
-#     channels = get_channels()  # using channels.list
-#     for channel in channels:
-#         if channel["name"] == channel_name:
-#             return channel["id"]
-
-# def write_recent_Time():
+def get_date(time):
+    dt = datetime.datetime(time[0], time[1], time[2],
+                           time[3]-4, time[4], time[5])
+    return dt.strftime('%m/%d/%y %H:%M:%S')
 
 
-# def read_recent_Time():
+def get_channel_id(channel_name, channels_list):
+    channels = channels_list['channels']
+    for channel in channels:
+        if channel['name'] == channel_name:
+            return channel["id"]
 
-# def get_most_recentTime():
 
-def main():
-
-    SLACK_TOKEN = XXXX
-    slack_client = SlackClient(SLACK_TOKEN)
-
-    wekbook_url = 'https://hooks.slack.com/services/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'
-
-    NewsFeed = feedparser.parse(
-        "https://community.omnisci.com/rssgenerator?UserKey=7f2de571-92e8-49b0-ba12-27413bf99c95")
-
-    channels = slack_client.api_call("channels.list")
-    channel_id = None
-    for channel in channels['channels']:
-        print(channel['name'])
-        if channel['name'] == "memes":
-            print("here")
-            channel_id = channel['id']
-
-    res = slack_client.api_call(
-        "channels.history", channel=channel_id, count=200)
-    #history = slack_client.api_call("channels.history", channel=channel_id, oldest=oldest, latest=latest)
-
-    count = 0
-    for mess in res['messages']:
-        # print(mess)
-        # break
+# Time from Slack Workspace
+def workspace_time(result):
+    index = 0
+    for message in result['messages']:
         try:
-            if (mess['subtype'] == "bot_message"):
-                print("here")
-                print(count)
+            if (message['subtype'] == "bot_message"):
                 break
         except:
             pass
-        count += 1
+        index += 1
 
-    # print(res['messages'][1]['subtype'] == "bot_message")
+    time = result['messages'][index]['attachments'][0]['fields'][1]['value']
+    corrected_time = datetime.datetime.strptime(time, '%m/%d/%y %H:%M:%S')
+
+    return corrected_time
+
+
+# Time from Community Page
+def community_time(feed):
+    latestPost = feed['entries'][0]
+    time = get_date(latestPost['published_parsed'])
+    corrected_time = datetime.datetime.strptime(time, '%m/%d/%y %H:%M:%S')
+
+    return corrected_time
+
+    # def write_recent_Time():
+
+
+def main():
+
+    SLACK_TOKEN = os.environ["SLACK_API_TOKEN"]
+    slack_client = SlackClient(SLACK_TOKEN)
+
+    webhook_url = 'https://hooks.slack.com/services/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'
+
+    community_page = feedparser.parse(
+        "https://community.omnisci.com/rssgenerator?UserKey=7f2de571-92e8-49b0-ba12-27413bf99c95")
+
+    channels_list = slack_client.api_call("channels.list")
+    result = slack_client.api_call(
+        "channels.history", channel=get_channel_id("memes", channels_list), count=100)
+
+    ws_time = workspace_time(result)
+    comm_time = community_time(community_page)
 
     # count = 0
-    # for entry in NewsFeed['entries']:
+    # for entry in community_page['entries']:
+
+    #     print()
 
     #     data = {}
     #     data["attachments"] = []
@@ -74,7 +85,7 @@ def main():
     #     })
     #     extras.append({
     #         "title": "Date2",
-    #         "value": entry['published'],
+    #         "value": get_date(entry['published_parsed']),
     #         "short": True
     #     })
 
@@ -88,7 +99,7 @@ def main():
     #         "fields": extras,
     #     })
 
-    #     response = requests.post(wekbook_url, data=json.dumps(
+    #     response = requests.post(webhook_url, data=json.dumps(
     #         data), headers={'Content-Type': 'application/json'})
 
     #     # print(json.dumps(data, indent=4))

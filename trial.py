@@ -69,50 +69,57 @@ def main():
     ws_time = workspace_time(result)
     comm_time = community_time(community_page)
 
-    # count = 0
-    # for entry in community_page['entries']:
+    if(comm_time > ws_time):
 
-    #     print()
+        for entry in community_page['entries']:
+            post_time = get_date(entry['published_parsed'])
 
-    #     data = {}
-    #     data["attachments"] = []
+            # You only need to check posts that were made most recently relative to the ones that
+            # have already been posted on slack
+            if(post_time > ws_time):
 
-    #     extras = []
-    #     extras.append({
-    #         "title": "Date",
-    #         "value": entry['published'],
-    #         "short": True
-    #     })
-    #     extras.append({
-    #         "title": "Date2",
-    #         "value": get_date(entry['published_parsed']),
-    #         "short": True
-    #     })
+                data = {}
+                data["attachments"] = []
 
-    #     data["attachments"].append({
-    #         "author_name": entry['author'],
-    #         "text": get_real_content(entry['summary']),
-    #         "title": entry['title'],
-    #         "title_link": entry['link'],
-    #         "color": "#3AA3E3",
-    #         "attachment_type": "default",
-    #         "fields": extras,
-    #     })
+                extras = []
+                extras.append({
+                    "title": "Date",
+                    "value": entry['published'],
+                    "short": True
+                })
+                extras.append({
+                    "title": "Date2",
+                    "value": post_time,
+                    "short": True
+                })
 
-    #     response = requests.post(webhook_url, data=json.dumps(
-    #         data), headers={'Content-Type': 'application/json'})
+                data["attachments"].append({
+                    "author_name": entry['author'],
+                    "text": get_real_content(entry['summary']),
+                    "title": entry['title'],
+                    "title_link": entry['link'],
+                    "color": "#3AA3E3",
+                    "attachment_type": "default",
+                    "fields": extras,
+                })
 
-    #     # print(json.dumps(data, indent=4))
-    #     print('Response: ' + str(response.text))
-    #     print('Response code: ' + str(response.status_code))
+                response = requests.post(webhook_url, data=json.dumps(
+                    data), headers={'Content-Type': 'application/json'})
 
-    #     if (count == 0):
-    #         break
+                # print(json.dumps(data, indent=4))
+                print('Response: ' + str(response.text))
+                print('Response code: ' + str(response.status_code))
 
-    #     count += 1
+                if (count == 0):
+                    break
 
-    #     del data
-    #     del extras
+                count += 1
+
+                del data
+                del extras
+
+            else:
+                break
 
     # with open('myJsonFun/input.json', 'r') as f:
     #     data = json.load(f)

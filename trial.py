@@ -1,5 +1,11 @@
-import requests
 import json
+import requests
+import feedparser
+import jsonpickle
+
+
+def get_real_content(current_summary):
+    return current_summary.split("<br />", 1)[1]
 
 
 def main():
@@ -57,20 +63,72 @@ def main():
     #                     "title": "Environment",
     #                     "value": "production"
     #                 }
-    #             ],
-
+    #             ]
     #         }
     #     ]
     # }
 
-    with open('input.json', 'r') as f:
-        data = json.load(f)
+    NewsFeed = feedparser.parse(
+        "https://community.omnisci.com/rssgenerator?UserKey=7f2de571-92e8-49b0-ba12-27413bf99c95")
 
-    response = requests.post(wekbook_url, data=json.dumps(
-        data), headers={'Content-Type': 'application/json'})
+    count = 0
+    for entry in NewsFeed['entries']:
 
-    print('Response: ' + str(response.text))
-    print('Response code: ' + str(response.status_code))
+        data = {}
+        data["attachments"] = []
+
+        extras = []
+        extras.append({
+            "title": "Date",
+            "value": entry['published'],
+            "short": True
+        })
+        extras.append({
+            "title": "Date2",
+            "value": entry['published'],
+            "short": True
+        })
+
+        data["attachments"].append({
+            "author_name": entry['author'],
+            "text": get_real_content(entry['summary']),
+            "title": entry['title'],
+            "title_link": entry['link'],
+            "color": "#3AA3E3",
+            "attachment_type": "default",
+            "fields": extras,
+        })
+
+        # "author_name": "Candido Dessanti",
+        # "text": "Ok I'll try to reproduce with such cardinalities, and report back",
+        # "title": "Facing Issue : ALLOCATION failed to find 256000000B free.",
+        # "title_link": "https://community.omnisci.com/communities/community-home/digestviewer/viewthread?GroupId=13&MessageKey=67",
+        # "color": "#3AA3E3",
+        # "attachment_type": "default",
+
+        print("hi")
+
+        requests.post(wekbook_url, data=json.dumps(
+            data), headers={'Content-Type': 'application/json'})
+
+        if (count == 4):
+            break
+
+        count += 1
+
+        del data
+        del extras
+
+    print(json.dumps(data, indent=4))
+
+    # with open('myJsonFun/input.json', 'r') as f:
+    #     data = json.load(f)
+
+    # response = requests.post(wekbook_url, data=json.dumps(
+    #     data), headers={'Content-Type': 'application/json'})
+
+    # print('Response: ' + str(response.text))
+    # print('Response code: ' + str(response.status_code))
 
 
 if __name__ == "__main__":

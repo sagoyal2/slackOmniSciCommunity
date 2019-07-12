@@ -14,7 +14,7 @@ def get_real_content(current_summary):
 def get_date(time):
     dt = datetime.datetime(time[0], time[1], time[2],
                            time[3]-4, time[4], time[5])
-    return dt.strftime('%m/%d/%y %H:%M:%S')
+    return dt
 
 
 def get_channel_id(channel_name, channels_list):
@@ -26,6 +26,7 @@ def get_channel_id(channel_name, channels_list):
 
 # Time from Slack Workspace
 def workspace_time(result):
+
     index = 0
     for message in result['messages']:
         try:
@@ -35,8 +36,12 @@ def workspace_time(result):
             pass
         index += 1
 
-    time = result['messages'][index]['attachments'][0]['fields'][1]['value']
-    corrected_time = datetime.datetime.strptime(time, '%m/%d/%y %H:%M:%S')
+    # In the event the bot has never been used
+    if(index == len(result['messages'])):
+        corrected_time = datetime.datetime.min
+    else:
+        time = result['messages'][index]['attachments'][0]['fields'][1]['value']
+        corrected_time = datetime.datetime.strptime(time, '%m/%d/%y %H:%M:%S')
 
     return corrected_time
 
@@ -44,12 +49,9 @@ def workspace_time(result):
 # Time from Community Page
 def community_time(feed):
     latestPost = feed['entries'][0]
-    time = get_date(latestPost['published_parsed'])
-    corrected_time = datetime.datetime.strptime(time, '%m/%d/%y %H:%M:%S')
+    corrected_time = get_date(latestPost['published_parsed'])
 
     return corrected_time
-
-    # def write_recent_Time():
 
 
 def main():
@@ -66,12 +68,12 @@ def main():
     result = slack_client.api_call(
         "channels.history", channel=get_channel_id("memes", channels_list), count=100)
 
-    ws_time = workspace_time(result)
+    ws_time = workspace_time(result)  # datetime.datetime.min
     comm_time = community_time(community_page)
 
     if(comm_time > ws_time):
 
-        for entry in community_page['entries']:
+        for entry in reversed(community_page['entries']):
             post_time = get_date(entry['published_parsed'])
 
             # You only need to check posts that were made most recently relative to the ones that
@@ -89,7 +91,7 @@ def main():
                 })
                 extras.append({
                     "title": "Date2",
-                    "value": post_time,
+                    "value": post_time.strftime('%m/%d/%y %H:%M:%S'),
                     "short": True
                 })
 
@@ -110,16 +112,8 @@ def main():
                 print('Response: ' + str(response.text))
                 print('Response code: ' + str(response.status_code))
 
-                if (count == 0):
-                    break
-
-                count += 1
-
                 del data
                 del extras
-
-            else:
-                break
 
     # with open('myJsonFun/input.json', 'r') as f:
     #     data = json.load(f)

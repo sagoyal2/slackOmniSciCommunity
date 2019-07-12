@@ -39,29 +39,32 @@ def main():
     #     ]
     # }
 
-    data = {
-        "attachments": [
-            {
-                "author_name": "Candido Dessanti",
-                "text": "Ok I'll try to reproduce with such cardinalities, and report back",
-                "title": "Facing Issue : ALLOCATION failed to find 256000000B free.",
-                "title_link": "https://community.omnisci.com/communities/community-home/digestviewer/viewthread?GroupId=13&MessageKey=67",
-                "color": "#3AA3E3",
-                "attachment_type": "default",
-                "fields": [
-                    {
-                        "title": "Project",
-                        "value": "Awesome Project"
-                    },
-                    {
-                        "title": "Environment",
-                        "value": "production"
-                    }
-                ],
+    # data = {
+    #     "attachments": [
+    #         {
+    #             "author_name": "Candido Dessanti",
+    #             "text": "Ok I'll try to reproduce with such cardinalities, and report back",
+    #             "title": "Facing Issue : ALLOCATION failed to find 256000000B free.",
+    #             "title_link": "https://community.omnisci.com/communities/community-home/digestviewer/viewthread?GroupId=13&MessageKey=67",
+    #             "color": "#3AA3E3",
+    #             "attachment_type": "default",
+    #             "fields": [
+    #                 {
+    #                     "title": "Project",
+    #                     "value": "Awesome Project"
+    #                 },
+    #                 {
+    #                     "title": "Environment",
+    #                     "value": "production"
+    #                 }
+    #             ],
 
-            }
-        ]
-    }
+    #         }
+    #     ]
+    # }
+
+    with open('input.json', 'r') as f:
+        data = json.load(f)
 
     response = requests.post(wekbook_url, data=json.dumps(
         data), headers={'Content-Type': 'application/json'})

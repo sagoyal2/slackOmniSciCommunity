@@ -68,7 +68,7 @@ def main():
     result = slack_client.api_call(
         "channels.history", channel=get_channel_id("memes", channels_list), count=100)
 
-    ws_time = workspace_time(result)  # datetime.datetime.min
+    ws_time = datetime.datetime.min  # workspace_time(result)
     comm_time = community_time(community_page)
 
     if(comm_time > ws_time):
@@ -85,12 +85,7 @@ def main():
 
                 extras = []
                 extras.append({
-                    "title": "Date",
-                    "value": entry['published'],
-                    "short": True
-                })
-                extras.append({
-                    "title": "Date2",
+                    "title": "Post Date",
                     "value": post_time.strftime('%m/%d/%y %H:%M:%S'),
                     "short": True
                 })

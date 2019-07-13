@@ -65,11 +65,21 @@ def main():
         "https://community.omnisci.com/rssgenerator?UserKey=7f2de571-92e8-49b0-ba12-27413bf99c95")
 
     # channels_list = slack_client.api_call("channels.list")
-    # result = slack_client.api_call(
-    #     "channels.history", channel=get_channel_id("memes", channels_list), count=100)
 
     slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
+
+    starterbot_id = slack_client.api_call("auth.test")["user_id"]
+    print(starterbot_id)
+
     channels_list = slack_client.api_call("channels.list")
+
+    result = slack_client.api_call(
+        "channels.history", channel=get_channel_id("memes", channels_list), count=3)
+    print(result)
+
+    # mybotinfo = slack_client.api_call("bots.info", starterbot_id)
+    # print(mybotinfo)
+
     # print(channels_list)
 
     # slack_client.api_call(
@@ -135,69 +145,69 @@ def main():
     #             del data
     #             del extras
 
-    ws_time = datetime.datetime.min  # workspace_time(result)
-    comm_time = community_time(community_page)
+    # ws_time = datetime.datetime.min  # workspace_time(result)
+    # comm_time = community_time(community_page)
 
-    if(comm_time > ws_time):
+    # if(comm_time > ws_time):
 
-        for entry in reversed(community_page['entries']):
-            post_time = get_date(entry['published_parsed'])
+    #     for entry in reversed(community_page['entries']):
+    #         post_time = get_date(entry['published_parsed'])
 
-            # You only need to check posts that were made most recently relative to the ones that
-            # have already been posted on slack
-            if(post_time > ws_time):
-                myblock = [
-                    {
-                        "type": "divider"
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text":  "*" + entry['title'] + "*"
-                        },
-                        "accessory": {
-                            "type": "button",
-                            "text": {
-                                    "type": "plain_text",
-                                "text": "Original Post"
-                            },
-                            "url": entry['link']
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                                "type": "mrkdwn",
-                            "text": get_real_content(entry['summary'])
-                        }
-                    },
-                    {
-                        "type": "context",
-                        "elements": [
-                                {
-                                    "type": "mrkdwn",
-                                    "text": "Last updated: " + post_time.strftime('%m/%d/%y %H:%M:%S')
-                                }
-                        ]
-                    },
-                    {
-                        "type": "context",
-                        "elements": [
-                                {
-                                    "type": "mrkdwn",
-                                    "text": "*Author:* " + entry['author']
-                                }
-                        ]
-                    }
-                ]
+    #         # You only need to check posts that were made most recently relative to the ones that
+    #         # have already been posted on slack
+    #         if(post_time > ws_time):
+    #             myblock = [
+    #                 {
+    #                     "type": "divider"
+    #                 },
+    #                 {
+    #                     "type": "section",
+    #                     "text": {
+    #                         "type": "mrkdwn",
+    #                         "text":  "*" + entry['title'] + "*"
+    #                     },
+    #                     "accessory": {
+    #                         "type": "button",
+    #                         "text": {
+    #                                 "type": "plain_text",
+    #                             "text": "Original Post"
+    #                         },
+    #                         "url": entry['link']
+    #                     }
+    #                 },
+    #                 {
+    #                     "type": "section",
+    #                     "text": {
+    #                             "type": "mrkdwn",
+    #                         "text": get_real_content(entry['summary'])
+    #                     }
+    #                 },
+    #                 {
+    #                     "type": "context",
+    #                     "elements": [
+    #                             {
+    #                                 "type": "mrkdwn",
+    #                                 "text": "Last updated: " + post_time.strftime('%m/%d/%y %H:%M:%S')
+    #                             }
+    #                     ]
+    #                 },
+    #                 {
+    #                     "type": "context",
+    #                     "elements": [
+    #                             {
+    #                                 "type": "mrkdwn",
+    #                                 "text": "*Author:* " + entry['author']
+    #                             }
+    #                     ]
+    #                 }
+    #             ]
 
-                slack_client.api_call(
-                    "chat.postMessage",
-                    channel=get_channel_id("memes", channels_list),
-                    text="My message",
-                    blocks=myblock
-                )
+    #             slack_client.api_call(
+    #                 "chat.postMessage",
+    #                 channel=get_channel_id("memes", channels_list),
+    #                 text="My message",
+    #                 blocks=myblock
+    #             )
 
     # with open('myJsonFun/input.json', 'r') as f:
     #     data = json.load(f)

@@ -148,6 +148,9 @@ def main():
             if(post_time > ws_time):
                 myblock = [
                     {
+                        "type": "divider"
+                    },
+                    {
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
@@ -157,7 +160,7 @@ def main():
                             "type": "button",
                             "text": {
                                     "type": "plain_text",
-                                "text": "OriginalPost"
+                                "text": "Original Post"
                             },
                             "url": entry['link']
                         }

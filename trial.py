@@ -47,17 +47,23 @@ def community_time(feed):
 
 def main():
 
+    # RSS Feed
     community_page = feedparser.parse(
         "https://community.omnisci.com/rssgenerator?UserKey=7f2de571-92e8-49b0-ba12-27413bf99c95")
 
+    # OAuth Token xoxp-XXXXXX....
     slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
     bot_username = "memeLord"
 
+    # needed scopes: admin, channels:history, channels:read, chat:write:bot, incoming-webhook, users:read
     channels_list = slack_client.api_call("channels.list")
+    # Assume bot was used in last 100 messages
     history = slack_client.api_call(
         "channels.history", channel=get_channel_id("memes", channels_list), count=100)
 
-    ws_time = workspace_time(history, bot_username)  # datetime.datetime.min
+    # Set ws_time = datetime.datetime.min the first time using cron and then afterwards set to workspace_time(history, bot_username)
+    # ws_time =  datetime.datetime.min, datetime.datetime(2019, 7, 9)
+    ws_time = workspace_time(history, bot_username)
     comm_time = community_time(community_page)
 
     if(comm_time > ws_time):

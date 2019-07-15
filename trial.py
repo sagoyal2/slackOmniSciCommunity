@@ -25,28 +25,46 @@ def get_channel_id(channel_name, channels_list):
 
 
 # Time from Slack Workspace
-def workspace_time(result):
+# def workspace_time(result):
 
-    index = 0
-    for message in result['messages']:
-        try:
-            if (message['subtype'] == "bot_message"):
-                break
-        except:
-            pass
-        index += 1
+    # index = 0
+    # for message in result['messages']:
+    #     try:
+    #         if (message['subtype'] == "bot_message"):
+    #             break
+    #     except:
+    #         pass
+    #     index += 1
 
-    # In the event the bot has never been used
-    if(index == len(result['messages'])):
-        corrected_time = datetime.datetime.min
-    else:
-        time = result['messages'][index]['attachments'][0]['fields'][1]['value']
-        corrected_time = datetime.datetime.strptime(time, '%m/%d/%y %H:%M:%S')
+    # # In the event the bot has never been used
+    # if(index == len(result['messages'])):
+    #     corrected_time = datetime.datetime.min
+    # else:
+    #     time = result['messages'][index]['attachments'][0]['fields'][1]['value']
+    #     corrected_time = datetime.datetime.strptime(time, '%m/%d/%y %H:%M:%S')
 
-    return corrected_time
+    # return corrected_time
+
+    # Time from Community Page
+
+def workspace_time(results, mybotname):
+
+    allMessages = results['messages']
+
+    time = None
+
+    for message in allMessages:
+        if (message['username'] == mybotname):
+            print(message['blocks'])
+            for block in message['blocks']:
+                if(block['block_id'] == "DateSection"):
+                    time = block['elements'][0]['text'].split("*Date:* ", 1)[1]
+            break
+
+    corrected_time = datetime.datetime.strptime(time, '%a %b %d %Y %H:%M:%S')
+    return(corrected_time)
 
 
-# Time from Community Page
 def community_time(feed):
     latestPost = feed['entries'][0]
     corrected_time = get_date(latestPost['published_parsed'])
@@ -61,24 +79,32 @@ def main():
 
     # webhook_url = 'https://hooks.slack.com/services/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'
 
+    slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
+    mybotname = "memeLord"
+
     community_page = feedparser.parse(
         "https://community.omnisci.com/rssgenerator?UserKey=7f2de571-92e8-49b0-ba12-27413bf99c95")
 
     # channels_list = slack_client.api_call("channels.list")
 
-    slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
-
-    starterbot_id = slack_client.api_call("auth.test")["user_id"]
-    print(starterbot_id)
+    auth = slack_client.api_call("auth.test")["user_id"]
+    print(auth)
 
     channels_list = slack_client.api_call("channels.list")
 
+    # https://api.slack.com/methods/bots.info/test
     result = slack_client.api_call(
         "channels.history", channel=get_channel_id("memes", channels_list), count=3)
     print(result)
 
-    # mybotinfo = slack_client.api_call("bots.info", starterbot_id)
-    # print(mybotinfo)
+    print("here")
+    mybotinfo = slack_client.api_call("bots.info", bot="BLFFE0B71")
+    print(mybotinfo)
+
+    print("spacer")
+    print("spacer")
+
+    print(workspace_time(result, mybotname))
 
     # print(channels_list)
 
@@ -184,10 +210,11 @@ def main():
     #                 },
     #                 {
     #                     "type": "context",
+    #                     "block_id": "DateSection",
     #                     "elements": [
     #                             {
     #                                 "type": "mrkdwn",
-    #                                 "text": "Last updated: " + post_time.strftime('%m/%d/%y %H:%M:%S')
+    #                                 "text": "*Date:* " + post_time.strftime('%a %b %d %Y %H:%M:%S')
     #                             }
     #                     ]
     #                 },

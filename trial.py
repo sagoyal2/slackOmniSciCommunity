@@ -4,7 +4,7 @@ import requests
 import feedparser
 import jsonpickle
 import datetime
-from slackclient import SlackClient
+from slack import WebClient
 
 
 def get_real_content(current_summary):
@@ -13,7 +13,7 @@ def get_real_content(current_summary):
 
 def get_date(time):
     dt = datetime.datetime(time[0], time[1], time[2],
-                           time[3]-4, time[4], time[5])
+                           time[3], time[4], time[5])
     return dt
 
 
@@ -28,11 +28,15 @@ def workspace_time(history, bot_username):
     all_messages = history['messages']
     time = None
     for message in all_messages:
-        if (message['username'] == bot_username):
-            for block in message['blocks']:
-                if(block['block_id'] == "DateSection"):
-                    time = block['elements'][0]['text'].split("*Date:* ", 1)[1]
-            break
+        try:
+            if (message['username'] == bot_username):
+                for block in message['blocks']:
+                    if(block['block_id'] == "DateSection"):
+                        time = block['elements'][0]['text'].split(
+                            "*Date:* ", 1)[1]
+                break
+        except:
+            pass
 
     corrected_time = datetime.datetime.strptime(time, '%a %b %d %Y %H:%M:%S')
     return(corrected_time)
@@ -52,14 +56,15 @@ def main():
         "https://community.omnisci.com/rssgenerator?UserKey=7f2de571-92e8-49b0-ba12-27413bf99c95")
 
     # OAuth Token xoxp-XXXXXX....
-    slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
+    slack_client = WebClient(os.environ.get('SLACK_BOT_TOKEN'))
     bot_username = "memeLord"
 
     # needed scopes: admin, channels:history, channels:read, chat:write:bot, incoming-webhook, users:read
-    channels_list = slack_client.api_call("channels.list")
+    channels_list = slack_client.channels_list()
+
     # Assume bot was used in last 100 messages
-    history = slack_client.api_call(
-        "channels.history", channel=get_channel_id("memes", channels_list), count=100)
+    history = slack_client.channels_history(
+        channel=get_channel_id("memes", channels_list), count=100)
 
     # Set ws_time = datetime.datetime.min the first time using cron and then afterwards set to workspace_time(history, bot_username)
     # ws_time =  datetime.datetime.min, datetime.datetime(2019, 7, 9)
@@ -121,8 +126,7 @@ def main():
                     }
                 ]
 
-                slack_client.api_call(
-                    "chat.postMessage",
+                slack_client.chat_postMessage(
                     channel=get_channel_id("memes", channels_list),
                     text="My message",
                     blocks=myblock

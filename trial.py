@@ -2,7 +2,6 @@ import os
 import json
 import requests
 import feedparser
-import jsonpickle
 import datetime
 from slack import WebClient
 
@@ -38,7 +37,13 @@ def workspace_time(history, bot_username):
         except:
             pass
 
-    corrected_time = datetime.datetime.strptime(time, '%a %b %d %Y %H:%M:%S')
+    corrected_time = None
+    if time is not None:
+        corrected_time = datetime.datetime.strptime(
+            time, '%a %b %d %Y %H:%M:%S')
+    else:
+        corrected_time = datetime.datetime.min
+
     return(corrected_time)
 
 
@@ -58,16 +63,15 @@ def main():
     # OAuth Token xoxp-XXXXXX....
     slack_client = WebClient(os.environ.get('SLACK_BOT_TOKEN'))
     bot_username = "memeLord"
+    channel_name = "memes"
 
-    # needed scopes: admin, channels:history, channels:read, chat:write:bot, incoming-webhook, users:read
+    # needed scopes: channels:history, channels:read, chat:write:bot, incoming-webhook, users:read
     channels_list = slack_client.channels_list()
 
     # Assume bot was used in last 100 messages
     history = slack_client.channels_history(
-        channel=get_channel_id("memes", channels_list), count=100)
+        channel=get_channel_id(channel_name, channels_list), count=100)
 
-    # Set ws_time = datetime.datetime.min the first time using cron and then afterwards set to workspace_time(history, bot_username)
-    # ws_time =  datetime.datetime.min, datetime.datetime(2019, 7, 9)
     ws_time = workspace_time(history, bot_username)
     comm_time = community_time(community_page)
 
@@ -127,8 +131,7 @@ def main():
                 ]
 
                 slack_client.chat_postMessage(
-                    channel=get_channel_id("memes", channels_list),
-                    text="My message",
+                    channel=get_channel_id(channel_name, channels_list),
                     blocks=myblock
                 )
 

@@ -4,6 +4,7 @@ import requests
 import feedparser
 import datetime
 from slack import WebClient
+import sys
 
 
 def get_real_content(current_summary):
@@ -61,11 +62,11 @@ def main():
         "https://community.omnisci.com/rssgenerator?UserKey=7f2de571-92e8-49b0-ba12-27413bf99c95")
 
     # OAuth Token xoxp-XXXXXX....
-    slack_client = WebClient(os.environ.get('SLACK_BOT_TOKEN'))
-    bot_username = "memeLord"
-    channel_name = "memes"
+    slack_client = WebClient(sys.argv[1])
+    bot_username = sys.argv[2]
+    channel_name = sys.argv[3]
 
-    # needed scopes: channels:history, channels:read, chat:write:bot, incoming-webhook, users:read
+    # needed scopes: channels:history, channels:read, chat:write:bot, incoming-webhook, users:read, chat:write:user
     channels_list = slack_client.channels_list()
 
     # Assume bot was used in last 100 messages

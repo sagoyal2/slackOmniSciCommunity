@@ -132,10 +132,13 @@ def main():
                     }
                 ]
 
-                slack_client.chat_postMessage(
-                    channel=get_channel_id(channel_name, channels_list),
-                    blocks=myblock
-                )
+                try:
+                    slack_client.chat_postMessage(
+                        channel=get_channel_id(channel_name, channels_list),
+                        blocks=myblock
+                    )
+                except:
+                    pass
 
 
 if __name__ == "__main__":

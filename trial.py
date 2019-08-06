@@ -91,7 +91,7 @@ def main():
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text":  "*" + entry['title']
+                            "text":  "*" + entry['title'] + "*"
                         },
                         "accessory": {
                             "type": "button",

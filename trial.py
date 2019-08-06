@@ -5,6 +5,7 @@ import feedparser
 import datetime
 from slack import WebClient
 import sys
+import urllib.parse
 
 
 def get_real_content(current_summary):
@@ -92,7 +93,7 @@ def main():
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text":  "*" + entry['title'] + "*"
+                            "text":  "*" + urllib.parse.quote(entry['title'], safe='') + "*"
                         },
                         "accessory": {
                             "type": "button",
@@ -125,7 +126,7 @@ def main():
                         "elements": [
                                 {
                                     "type": "mrkdwn",
-                                    "text": "*Author:* " + entry['author']
+                                    "text": "*Author:* " + urllib.parse.quote(entry['author'], safe='')
                                 }
                         ]
                     }
